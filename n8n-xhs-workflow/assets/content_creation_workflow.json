@@ -1,0 +1,1440 @@
+{
+  "name": "小红书文案素材工作流 copy",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "小红书内容生成器",
+        "formDescription": "根据指定的信息，自动生成小红书风格素材，含：文案、配图/视频等",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "内容来源",
+              "fieldType": "textarea",
+              "placeholder": "输入文案主题/文案内容/url链接",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "文案风格",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "通用风格"
+                  },
+                  {
+                    "option": "女性成长"
+                  },
+                  {
+                    "option": "美食探店"
+                  },
+                  {
+                    "option": "母婴"
+                  },
+                  {
+                    "option": "好物推荐"
+                  },
+                  {
+                    "option": "家居"
+                  },
+                  {
+                    "option": "户外出行"
+                  },
+                  {
+                    "option": "美妆穿搭"
+                  },
+                  {
+                    "option": "创业副业"
+                  },
+                  {
+                    "option": "知识技能"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "是否生成图片",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "是"
+                  },
+                  {
+                    "option": "否"
+                  }
+                ]
+              },
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "配图风格",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "记事本风格"
+                  },
+                  {
+                    "option": "普通风格"
+                  },
+                  {
+                    "option": "AI生成"
+                  }
+                ]
+              },
+              "multiselect": true
+            },
+            {
+              "fieldLabel": "生成视频",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "是"
+                  },
+                  {
+                    "option": "否"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -896,
+        144
+      ],
+      "id": "89c895c4-48f2-480d-a8a8-61c2f10d3cf7",
+      "name": "On form submission",
+      "webhookId": "57c9d62c-8e22-4de9-b326-fb490c6cb886"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fbe32261-3848-42c1-919e-e789ead34376",
+              "leftValue": "={{ $('On form submission').item.json['内容来源'] }}",
+              "rightValue": "^(https?:\\/\\/)?([\\w\\-]+\\.)+[\\w\\-]+(\\/[\\w\\-.~:?#\\[\\]@!$&'()*+,;=]*)*$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        144
+      ],
+      "id": "3319915d-7f83-448e-bbe7-bddb7863c065",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('On form submission').item.json[\"内容来源\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8cc74910-68ca-427f-a00b-96224f2c32da",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取HTML内容\nlet htmlContent = $input.first().json.data || '';\n\nif (!htmlContent) {\n  return [{\n    json: {\n      cleanText: '',\n      originalLength: 0,\n      cleanLength: 0\n    }\n  }];\n}\n\n// 去除script和style标签及其内容\nhtmlContent = htmlContent.replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '');\nhtmlContent = htmlContent.replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '');\n\n// 为块级元素添加换行标记\nconst blockElements = [\n  'div', 'p', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',\n  'li', 'ul', 'ol', 'blockquote', 'pre', 'hr', 'table',\n  'tr', 'td', 'th', 'header', 'footer', 'section', 'article',\n  'nav', 'main', 'aside'\n];\n\nblockElements.forEach(tag => {\n  const regex = new RegExp(`<\\\\/?${tag}[^>]*>`, 'gi');\n  htmlContent = htmlContent.replace(regex, '\\n');\n});\n\n// 去除所有剩余的HTML标签\nhtmlContent = htmlContent.replace(/<[^>]*>/g, '');\n\n// 解码常见的HTML实体\nconst htmlEntities = {\n  \"&amp;\": \"&\",\n  \"&lt;\": \"<\",\n  \"&gt;\": \">\",\n  \"&quot;\": \"\\\"\",\n  \"&#39;\": \"'\",\n  \"&apos;\": \"'\",\n  \"&nbsp;\": \" \",\n  \"&copy;\": \"©\",\n  \"&reg;\": \"®\",\n  \"&trade;\": \"™\",\n  \"&hellip;\": \"…\",\n  \"&mdash;\": \"—\",\n  \"&ndash;\": \"–\",\n  \"&lsquo;\": \"'\",\n  \"&rsquo;\": \"'\",\n  \"&ldquo;\": \"\\\"\",\n  \"&rdquo;\": \"\\\"\"\n};\n\nObject.keys(htmlEntities).forEach(entity => {\n  const regex = new RegExp(entity, 'g');\n  htmlContent = htmlContent.replace(regex, htmlEntities[entity]);\n});\n\n// 解码数字HTML实体（如 &#123;）\nhtmlContent = htmlContent.replace(/&#(\\d+);/g, (match, dec) => {\n  return String.fromCharCode(dec);\n});\n\n// 解码十六进制HTML实体（如 &#x7B;）\nhtmlContent = htmlContent.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {\n  return String.fromCharCode(parseInt(hex, 16));\n});\n\n// 清理和格式化文本\nhtmlContent = htmlContent\n  .replace(/\\n\\s*\\n\\s*\\n/g, '\\n\\n')  // 三个或更多连续换行合并为两个\n  .replace(/[ \\t]+/g, ' ')            // 多个连续空格/制表符合并为一个空格\n  .replace(/^\\s+|\\s+$/g, '')          // 去除首尾空白\n  .replace(/\\n /g, '\\n')              // 去除行首空格\n  .replace(/ \\n/g, '\\n')              // 去除行尾空格\n  .replace(/\\n{3,}/g, '\\n\\n');        // 确保最多只有两个连续换行\n\n// 返回处理结果\nreturn [{\n  json: {\n    cleanText: htmlContent,\n    originalLength: ($input.first().json.data || '').length,\n    cleanLength: htmlContent.length,\n    wordCount: htmlContent.trim() ? htmlContent.trim().split(/\\s+/).length : 0\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        0
+      ],
+      "id": "cd283650-4f3e-4e18-9ef4-e66a0c21caac",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=文案内容：{{ $json.cleanText }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=你是一位资深小红书内容创作专家，擅长将文章内容转化为吸引眼球且具有高互动率的小红书风格文案。请根据提供的内容，创作一篇符合以下要求的小红书文案：\n\n## 风格要求：\n1. 开头使用1-2个吸引眼球的emoji和简洁有力的标题，快速抓住读者注意力。\n2. 语言年轻化、亲切自然，符合小红书用户的表达习惯，带有轻松幽默感。\n3. 适当插入emoji表情，增强趣味性和视觉效果，但不过度堆砌。\n4. 分段清晰，每个段落突出重点，便于阅读和理解。\n5. 结尾部分明确引导用户进行点赞、收藏和评论，提升互动率。\n\n## 参考的结构/模板：\n{{ $('Code4').item.json.styleContent }}\n\n## 长度控制：\n- 总字数控制在200-300字之间，内容精炼且信息完整，避免冗余。\n\n## 额外要求：\n1. 为文案生成一段配图描述，便于通过AI工具创作风格统一且契合主题的图片。\n2. 从文案中提炼1-2句关键句子或亮点，作为图片上的文案，可按小红书风格多添加换行符增强可读性，每段文案不超过5个汉字（如：一个新人\\n做电商\\n到底应该\\n如何起步？）\n3. 根据文案主题提取3-5个英文核心关键词，用于在素材网站或图库中精准搜索相关图片素材。\n\n请严格按照上述要求输出内容，确保文案既符合小红书风格，又具备高吸引力和互动性。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        352,
+        0
+      ],
+      "id": "91d6d3dc-f055-42f5-a258-a10922d7026c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        208,
+        176
+      ],
+      "id": "7b6bab18-e39b-4fc1-91df-2a1a15802496",
+      "name": "DeepSeek Chat Model1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        176
+      ],
+      "id": "abad496e-b3d0-4f77-b8d1-4715713df2b3",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\"Xhs_Copywriter\": \"小红书文案内容\",\n\"Pic_Description\":\"配图描述\",\n\"Pic_Keywords\":\"图片关键词\",\n\"Pic_Sentences\":\"图片关键句子\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        176
+      ],
+      "id": "ad8e4ae4-0151-4685-9ea7-110a261a0094",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8078d6a3-c79a-4bd3-9229-f86d22314aa9",
+              "leftValue": "={{ $('On form submission').item.json[\"是否生成图片\"] }}",
+              "rightValue": "是",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        112
+      ],
+      "id": "407f0115-7090-4416-b440-64d9b4f645df",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f62450b-99eb-40d2-b859-1a5d2fa24de1",
+              "name": "fold",
+              "value": "={{ $json.output.Pic_Sentences.replace(/[\\n\\r]+/g, ',').replace(/[\"'\\\\/:*?<>|]/g, '') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        816,
+        144
+      ],
+      "id": "155a2664-265b-409c-82e5-ddc882a83d23",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.style }}",
+                    "rightValue": "=记事本风格",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e9cfde61-b5e3-4690-9bae-ced47a42291f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dde474f7-41ea-486c-8ae2-25f5b720d04b",
+                    "leftValue": "={{ $json.style }}",
+                    "rightValue": "普通风格",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4c152838-2dd7-4ee0-bd46-2f18b439be4b",
+                    "leftValue": "={{ $json.style }}",
+                    "rightValue": "AI生成",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -208,
+        576
+      ],
+      "id": "87c8cc6d-99eb-49b6-a7c0-eeca9d88d542",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "style",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        592
+      ],
+      "id": "1316781f-a35d-45b7-9572-a5511bfc481d",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取文本数据\nconst inputData = $('AI Agent').item.json.output.Pic_Sentences;\n\n// 获取最大值数据\nconst maxValue = $('Edit Fields1').first().json.bignum;\n\n// 处理文本拆分（title固定2行，info为剩余内容）\nconst segments = inputData.split('\\n').filter(item => item.trim() !== '');\n\n// 固定规则：title取前2行，info取剩余行\nconst titleLines = 2;\nconst titleParts = segments.slice(0, titleLines);\nconst infoParts = segments.slice(titleLines);\n\n// 处理边界情况\nconst title = titleParts.join('\\n');\nconst info = infoParts.length > 0 ? infoParts.join('\\n') : '';\n\n// 生成随机数\nconst randomNumber = Math.floor(Math.random() * maxValue) + 1;\n\n// 返回合并后的结果\nreturn [\n  {\n    json: {\n      // 文本拆分结果\n      title: title,\n      info: info,\n      original: inputData,\n      segments_count: segments.length,\n      title_segments: titleParts.length,\n      \n      // 随机数结果\n      randomNumber: randomNumber,\n      maxValue: maxValue\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        416
+      ],
+      "id": "527820bf-3027-400d-9638-6831e48c543b",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=./n8ndata/picbg/{{ $json.randomNumber }}.jpg",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        352,
+        416
+      ],
+      "id": "8fc3ba27-0ba1-4528-9b65-b4338caa6987",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "multiStep",
+        "operations": {
+          "operations": [
+            {
+              "operation": "text",
+              "text": "={{ $('Code1').item.json.title }}",
+              "fontSize": 180,
+              "positionX": 200,
+              "positionY": 400,
+              "lineLength": 10,
+              "font": "/usr/share/fonts/truetype/host/A_HYPixel11pxU-2.ttf"
+            },
+            {
+              "operation": "text",
+              "text": "={{ $('Code1').item.json.info }}\n",
+              "fontSize": 150,
+              "positionX": 200,
+              "positionY": 900,
+              "lineLength": 10,
+              "font": "/usr/share/fonts/truetype/host/A_HYPixel11pxU-2.ttf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        640,
+        416
+      ],
+      "id": "d1151b31-ad8f-4cb5-b1a4-6391734412c4",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        144
+      ],
+      "id": "5ba979c5-8896-44d5-91d3-518da5c236b4",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "jsCode": "const jsonData1 = $('AI Agent').first().json.output.Xhs_Copywriter;\n\nconst jsonData2 = $('AI Agent').first().json.output.Pic_Description;\n\n// 将两个JSON对象转换为格式化的文本\nconst fileContent = JSON.stringify(jsonData1, null, 2) + '\\n\\n' + JSON.stringify(jsonData2, null, 2);\n\n// 将文本内容转换为base64\nconst base64Content = Buffer.from(fileContent, 'utf8').toString('base64');\n\n// 创建文件名（可以添加时间戳）\n\nconst fileName = `小红书文案.txt`;\n\n// 返回包含base64编码数据的结果\nreturn [\n  {\n    json: {\n      fileName: fileName,\n      fileContent: fileContent,\n      base64Data: base64Content,\n      fileSize: fileContent.length\n    },\n    binary: {\n      data: {\n        data: base64Content,\n        mimeType: 'text/plain',\n        fileName: fileName,\n        fileExtension: 'txt'\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        144
+      ],
+      "id": "0f69698a-f6d4-4843-b99b-2adf73d986a6",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=./n8ndata/{{ $('Edit Fields').item.json.fold }}/{{ $json.fileName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        144
+      ],
+      "id": "7488368d-9d5f-49ea-9454-a3f3242dce3d",
+      "name": "Read/Write Files from Disk2"
+    },
+    {
+      "parameters": {
+        "url": "https://api.pexels.com/v1/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.randomKeyword }}"
+            },
+            {
+              "name": "per_page",
+              "value": "3"
+            },
+            {
+              "name": "orientation",
+              "value": "portrait"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "t50IrKlRkoghVjM8qjB4b9BN00RN8cVTMLAIpGDsjx0ELf1yeOZxaqUs"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        592
+      ],
+      "id": "3e6c7cf7-8036-4a50-a268-15381efc98c4",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取关键词字符串\nconst keywords = $('AI Agent').item.json.output.Pic_Keywords;\n\n// 获取文本数据\nconst inputData = $('AI Agent').item.json.output.Pic_Sentences;\n\n// 处理关键词\nconst keywordArray = keywords.split(',').map(keyword => keyword.trim());\nconst randomKeyword = keywordArray[Math.floor(Math.random() * keywordArray.length)];\n\n// 处理文本拆分（title固定2行，info为剩余内容）\nconst segments = inputData.split('\\n').filter(item => item.trim() !== '');\nconst titleLines = 2;\nconst titleParts = segments.slice(0, titleLines);\nconst infoParts = segments.slice(titleLines);\nconst title = titleParts.join('\\n');\nconst info = infoParts.length > 0 ? infoParts.join('\\n') : '';\n\n// 返回n8n格式的结果\nreturn [\n  {\n    json: {\n      // 关键词处理结果\n      randomKeyword: randomKeyword,\n      allKeywords: keywordArray,\n      totalCount: keywordArray.length,\n      \n      // 文本拆分结果\n      title: title,\n      info: info,\n      original: inputData,\n      segments_count: segments.length\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        592
+      ],
+      "id": "e9069bfc-3a60-419d-927e-4809516961e8",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.photos[0].src.original }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        592
+      ],
+      "id": "90f35760-1532-4a64-9c44-33e3e13a27a4",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "operation": "multiStep",
+        "operations": {
+          "operations": [
+            {
+              "operation": "resize",
+              "width": 1242,
+              "height": 1656
+            },
+            {
+              "operation": "blur",
+              "blur": 35,
+              "sigma": 10
+            },
+            {
+              "operation": "text",
+              "text": "={{ $('Code3').item.json.title }}",
+              "fontSize": 180,
+              "fontColor": "#FFE609",
+              "positionX": 200,
+              "positionY": 350,
+              "lineLength": 10,
+              "font": "/usr/share/fonts/truetype/host/AiDianZiTi-2.ttf"
+            },
+            {
+              "operation": "text",
+              "text": "={{ $('Code3').item.json.info }}",
+              "fontSize": 150,
+              "fontColor": "#FFE609",
+              "positionX": 200,
+              "positionY": 800,
+              "lineLength": 10,
+              "font": "/usr/share/fonts/truetype/host/AiDianZiTi-2.ttf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        640,
+        592
+      ],
+      "id": "83057943-ebdc-4ca1-a969-4bd11df13296",
+      "name": "Edit Image2"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=./n8ndata/{{ $('Edit Fields').item.json.fold }}/{{ $('Switch').item.json.style }}.jpg",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        592
+      ],
+      "id": "dde1a9bf-0149-4023-9eae-b7b1d57876db",
+      "name": "Read/Write Files from Disk3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "  https://api.replicate.com/v1/models/google/imagen-4/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer replicate平台的apikey"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"input\": {\n      \"prompt\": \"{{ $('AI Agent').item.json.output.Pic_Description }}\",\n      \"aspect_ratio\": \"9:16\",\n      \"output_format\": \"jpg\",\n      \"safety_filter_level\": \"block_medium_and_above\"\n    }\n  }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        784
+      ],
+      "id": "bcc80fd1-8197-4708-8fba-b1cf175fa7b5",
+      "name": "生成图片"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        784
+      ],
+      "id": "b2678dbe-2b58-4c50-9f6f-de5e53605319",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:8080/api/v1/videos",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"video_subject\": \"{{ $('On form submission').item.json[\"内容来源\"] }}\",\n    \"video_script\": \"{{ $json.formatted_text }}\",\n    \"video_terms\": \"{{ $('AI Agent').item.json.output.Pic_Keywords }}\",\n    \"video_aspect\": \"9:16\",\n    \"video_concat_mode\": \"sequential\",\n    \"video_transition_mode\": \"None\",\n    \"video_clip_duration\": 4,\n    \"video_count\": 1,\n    \"video_source\": \"pexels\",\n    \"video_materials\":null,\n    \"video_language\": \"\",\n    \"voice_name\": \"siliconflow:FunAudioLLM/CosyVoice2-0.5B:benjamin-Male\",\n    \"voice_volume\": 1.0,\n    \"voice_rate\": 1.2,\n    \"bgm_type\": \"random\",\n    \"bgm_file\": \"\",\n    \"bgm_volume\": 0.2,\n    \"subtitle_enabled\": true,\n    \"subtitle_position\": \"bottom\",\n    \"custom_position\": 70.0,\n    \"font_name\": \"MicrosoftYaHeiBold.ttc\",\n    \"text_fore_color\": \"#FFFFFF\",\n    \"text_background_color\": true,\n    \"font_size\": 60,\n    \"stroke_color\": \"#000000\",\n    \"stroke_width\": 1.5,\n    \"n_threads\": 2,\n    \"paragraph_number\": 1\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -592,
+        1088
+      ],
+      "id": "9ab66f44-27d5-401e-a6cb-af831c9b84b3",
+      "name": "生成视频"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        1088
+      ],
+      "id": "3fa2608d-774f-4ecc-96b7-dfb2e8d0e22c",
+      "name": "Wait",
+      "webhookId": "cf24f397-124d-4732-a139-4a59e0380c1e"
+    },
+    {
+      "parameters": {
+        "url": "=http://host.docker.internal:8080/api/v1/tasks/{{ $json.data.task_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -32,
+        1088
+      ],
+      "id": "36aba132-7357-4dc0-8f85-8050dec00086",
+      "name": "查询视频"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=./n8ndata/{{ $('Edit Fields').item.json.fold }}/video.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        704,
+        1088
+      ],
+      "id": "5508901f-3e47-47d9-8010-6e29809ec9f2",
+      "name": "写入磁盘3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f5d66584-990a-4d75-ae70-22e521de4e91",
+              "leftValue": "={{ $json.data.progress }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        1088
+      ],
+      "id": "35929ea5-978c-4e02-b22a-7aba1ba0a3f8",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data.videos[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        1088
+      ],
+      "id": "cd00f9ed-b351-44a7-8972-0b6eaa58a76d",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7647db4c-8e31-4172-af28-5be236adaf70",
+              "leftValue": "={{ $('On form submission').item.json[\"生成视频\"] }}",
+              "rightValue": "是",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        240
+      ],
+      "id": "105c36f3-773e-4a4c-b95b-16c4ca3d1457",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取输入文本\nconst inputText = $('AI Agent').first().json.output.Xhs_Copywriter;\n\n// 格式化文本函数 - 反向操作，只保留需要的字符\nfunction formatText(text) {\n  let cleanedText = text;\n  \n  // 1. 只保留中文、英文、数字、常用标点符号和空格\n  // 这样可以有效去除所有emoji（包括复合emoji）\n  cleanedText = cleanedText.replace(/[^\\u4e00-\\u9fff\\u3400-\\u4dbf\\u3000-\\u303f\\uff00-\\uffefa-zA-Z0-9\\s.,!?;:()（）！？；：、。，]/g, '');\n  \n  // 2. 去除换行符，替换为空格\n  cleanedText = cleanedText.replace(/\\n+/g, ' ');\n  \n  // 3. 去除tag标签（#开头的词汇）\n  cleanedText = cleanedText.replace(/#[^\\s#]+/g, '');\n  \n  // 4. 去除单双引号\n  cleanedText = cleanedText.replace(/['\"]/g, '');\n  \n  // 5. 清理多余空格并修剪首尾空格\n  cleanedText = cleanedText.replace(/\\s+/g, ' ').trim();\n  \n  return cleanedText;\n}\n\n// 处理文本\nconst formattedText = formatText(inputText);\n\n// 返回n8n格式的结果\nreturn [\n  {\n    json: {\n      formatted_text: formattedText,\n      character_count: formattedText.length\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        1088
+      ],
+      "id": "3a0384ba-2b77-478b-8f86-56a0a4c08c33",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "629e2561-51c1-44c0-a210-e3ae3165d495",
+              "name": "style",
+              "value": "={{ $('On form submission').item.json[\"配图风格\"] }}",
+              "type": "array"
+            },
+            {
+              "id": "16685d75-2b18-43f5-b9a3-9a61fce72e57",
+              "name": "bignum",
+              "value": 8,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -880,
+        592
+      ],
+      "id": "d73c9b4c-c22c-4260-a788-e4ea4e760269",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "\n## 小红书图片素材生成\n- 根据用户选择，生成相应风格的图片，并且保存到本地文件",
+        "height": 608,
+        "width": 2784,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -912,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "7593fa7f-3513-41b6-88a1-aa01cfc359c4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "\n## 小红书视频素材生成\n- 根据用户选择，生成短视频，保存到本地文件夹",
+        "height": 400,
+        "width": 2784,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -912,
+        1008
+      ],
+      "typeVersion": 1,
+      "id": "604b4f99-9cf1-476b-96eb-ab0f40e5f52e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "837b43a9-ca86-43fe-ab7c-a5ca50f99f26",
+              "name": "通用风格",
+              "value": "【开头】：用1-2个emoji + 吸引人的标题，营造氛围。\n【正文】：包含3-4个要点，每个要点前加emoji符号，条理清晰，信息丰富。\n【总结】：用简洁有力的语言总结核心观点，增强印象。\n【互动】：设计贴合内容的互动引导语，鼓励用户点赞、收藏和评论。\n【标签】：添加3-5个与内容高度相关的话题标签，方便内容传播。",
+              "type": "string"
+            },
+            {
+              "id": "44a8f2c3-1979-490b-835e-ddd061a6190a",
+              "name": "女性成长",
+              "value": "❤️ 自我关爱日记 ㅤ \nㅤ\n❤️ \n① 健康习惯：运动、饮食 \n② 精神护理：放松身心 单独\n③ 趣味爱好：释放压力 ㅤ \nㅤ\n📝 感悟分享 \n🌼 \"自己是自己生命中最重要的人\" \n🌟 \"爱自己才能更好地爱别人\" ㅤ \nㅤ\n🌸 记录每天的自我成长，因为你值得！",
+              "type": "string"
+            },
+            {
+              "id": "90d69235-3178-42cc-9416-4afd987ed579",
+              "name": "美食探店",
+              "value": "分享这家超级有氛围感的小酒馆，晚上和三五好友在这里相聚喝酒真的很不戳！\nㅤ\n​⤵︎◦​\n✔️ \n✔️ \n✔ \nㅤ\n\n地址在这里，去xx的时候一定记得打卡\n📍 xx\n",
+              "type": "string"
+            },
+            {
+              "id": "3f58cf28-2d6d-43ac-9b68-60a8d0ab2b24",
+              "name": "母婴",
+              "value": "𖠚ᐝ\nㅤ\n分享近期爱用的宝宝👶好物\nㅤ\n超级实用不闲置，一人带娃也省心\n🟡 辅食锅\nxxx\nㅤ\n🟡 备用奶嘴\nxxx\nㅤ\n🟡 奶嘴刷\nxxx\nㅤ\n🟡 抽屉安全锁\nxxx\nㅤ\n爸爸妈妈快去冲鸭❗",
+              "type": "string"
+            },
+            {
+              "id": "7b9337fc-d69b-4978-b0ef-8da8b8742ae4",
+              "name": "好物推荐",
+              "value": "分享我的好物清单！！\n把家打造成自己喜欢的样子✌\nㅤ\n//ᴳᴼᴼᴰ ᴰᴬᵞ\nㅤ\n🧊NO.1\n🍉NO.2\n🧊NO.3\n🍉NO.4\n🧊NO.5\n🍉NO.6\nㅤ\n//ᴳᴼᴼᴰ ᴰᴬᵞ\nㅤ\n#购物分享[话题]# #好物分享[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "34ef2a09-c162-4eaf-875a-d047d87260e7",
+              "name": "家居",
+              "value": "把这套奶油LOFT里的所有饰品分享给大家❕\nㅤ\n🧾清单如下\n➀ \n➁ \n➂ \n➃ \n➄ \n➅ \n➆ \n➇ \n➈ \n➀⓪ \n➀➀ \n➀➁ \nㅤ\n🪞：𝖣𝖺𝗂𝗅𝗒 𝗅𝗂𝖿𝖾 ･◡･\n这些小小又精致的小摆件一下就让空间活泼起来啦\nㅤ\n#装修[话题]# #好物分享[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "59a56a8d-7f3a-43d4-abc0-a77577ab20c8",
+              "name": "户外出行",
+              "value": "⛺露营季来了！\nㅤ\n📋保姆级清单：\n1⃣️ \n2⃣️ \n3⃣️ \n4⃣️ \n5⃣️ \n6⃣️ \n7⃣️ \n8⃣️ \n9⃣️ \nㅤ\n♡ >> ☪︎ 今日份美丽营业用到的氛围感好物♬\nㅤ\n⚪️ \n⚪️ \n⚪️ \nㅤ\n#小红书露营季[话题]# #一起去露营[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "23deecf4-168e-4b7d-b6e7-a6125cfcb70f",
+              "name": "美妆穿搭",
+              "value": "✨超简单新手妆容✨\nㅤ\n💫𝗧𝗜𝗣 𝟭：\nㅤ\n💫𝗧𝗜𝗣 𝟮：\nㅤ\n💫𝗧𝗜𝗣 𝟯：\nㅤ\n💫𝗧𝗜𝗣 𝟰：\nㅤ\n💫𝗧𝗜𝗣 𝟱：\nㅤ\n💫𝗧𝗜𝗣 𝟲：\nㅤ\n#今日妆容[话题]# #美妆[话题]# #妆容教学[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "67fcb934-c5dd-44a8-bec1-b2b53b9c53de",
+              "name": "创业副业",
+              "value": "🎈花了5天时间，整合13个带货账号案例\nㅤ\n🎈为大家总结一些实用原则\n1⃣️ \n2⃣️ \n3⃣️ \n4⃣️ \nㅤ\n🎈举几个例子\nA. \n>>改成：\nB.\n>>改成：\nㅤ\n实战TIPS：\n💡\n💡\n💡\n💡\nㅤ\n#自媒体运营[话题]# #带货[话题]# #创业[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "0b70635d-f76f-4875-ab91-b038dd03acec",
+              "name": "知识技能",
+              "value": "混职场一定要学好的office进阶技能，让领导看见你的闪光点，咻咻咻地升职加薪🚀🚀\nㅤ\n请收藏这份学习路径指南：\n1️⃣ \n2️⃣ \n3️⃣ \n4️⃣ \n5️⃣ \n6️⃣ \n7️⃣ \nㅤ\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -688,
+        144
+      ],
+      "id": "dcecf9f1-82ac-4140-a61a-d39804e57bbe",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取用户选择的风格\nconst selectedStyle = $('On form submission').first().json[\"文案风格\"];\n\n// 获取所有风格数据\nconst allStylesData = $input.all();\n\nlet styleContent = null;\n\n// 遍历所有输入数据，查找匹配的风格\nfor (const item of allStylesData) {\n  // 检查item.json中是否包含所选风格\n  if (item.json && item.json[selectedStyle]) {\n    styleContent = item.json[selectedStyle];\n    break;\n  }\n  \n  // 如果直接在item中查找（备用匹配方式）\n  if (item[selectedStyle]) {\n    styleContent = item[selectedStyle];\n    break;\n  }\n}\n\n// 返回匹配结果\nreturn [{\n  json: {\n    selectedStyle: selectedStyle,\n    styleContent: styleContent,\n    found: styleContent !== null\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        144
+      ],
+      "id": "44962eec-7341-41a3-a392-787e9459dd28",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f724f2f-0c6c-45ab-9786-7dbeee37081a",
+              "name": "cleanText",
+              "value": "={{ $('On form submission').item.json[\"内容来源\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        160
+      ],
+      "id": "23ffc6ba-825e-4ca8-90f4-e1d183243822",
+      "name": "Edit Fields3"
+    }
+  ],
+  "pinData": {
+    "On form submission": [
+      {
+        "json": {
+          "内容来源": "https://www.qbitai.com/2025/07/314155.html",
+          "文案风格": "知识技能",
+          "是否生成图片": "是",
+          "配图风格": [
+            "记事本风格",
+            "普通风格",
+            "AI生成"
+          ],
+          "生成视频": "是",
+          "submittedAt": "2025-07-28T14:46:10.447+08:00",
+          "formMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "生成图片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk2": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Edit Image2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "生成图片": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "生成视频": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "查询视频",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查询视频": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "写入磁盘3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "生成视频",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "9a0a893b-da43-4d82-bde9-51bc00cb4e89",
+  "meta": {
+    "instanceId": "1b5796879866cf44e663c11b83480667c52bd28b0cb49fe603b951b76f981239"
+  },
+  "id": "6IE1_tbSrSieVfM5ctQiW",
+  "tags": []
+}
