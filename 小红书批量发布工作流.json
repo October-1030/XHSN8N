@@ -1,0 +1,1650 @@
+{
+  "name": "小红书批量发布工作流",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        128
+      ],
+      "id": "63ce0619-6fc0-4283-b028-e5135f72fb96",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1056,
+        -64
+      ],
+      "id": "1a6ff164-c3b5-4197-9a32-d2151969f872",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "getAll",
+        "databaseId": {
+          "__rl": true,
+          "value": "287629a6-152d-8073-98f3-e261b111ca74",
+          "mode": "list",
+          "cachedResultName": "小红书笔记列表",
+          "cachedResultUrl": "https://www.notion.so/287629a6152d807398f3e261b111ca74"
+        },
+        "simple": false,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "key": "状态|select",
+              "condition": "does_not_equal",
+              "selectValue": "已发布"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -144,
+        -64
+      ],
+      "id": "abf3db7d-3511-4e38-8fd3-8f11b1f27338",
+      "name": "Get many database pages",
+      "retryOnFail": true,
+      "credentials": {
+        "notionApi": {
+          "id": "tHqNwAxXQ88MGWlm",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fbe32261-3848-42c1-919e-e789ead34376",
+              "leftValue": "={{ $json.originalData.properties[\"来源\"].title[0].text.content }}",
+              "rightValue": "^(https?:\\/\\/)?([\\w\\-]+\\.)+[\\w\\-]+(\\/[\\w\\-.~:?#\\[\\]@!$&'()*+,;=]*)*$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        -64
+      ],
+      "id": "98bfcf82-dabc-4b6d-b26e-d2e36f5d5b4a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "837b43a9-ca86-43fe-ab7c-a5ca50f99f26",
+              "name": "通用风格",
+              "value": "【开头】：用1-2个emoji + 吸引人的标题，营造氛围。\n【正文】：包含3-4个要点，每个要点前加emoji符号，条理清晰，信息丰富。\n【总结】：用简洁有力的语言总结核心观点，增强印象。\n【互动】：设计贴合内容的互动引导语，鼓励用户点赞、收藏和评论。\n【标签】：添加3-5个与内容高度相关的话题标签，方便内容传播。",
+              "type": "string"
+            },
+            {
+              "id": "44a8f2c3-1979-490b-835e-ddd061a6190a",
+              "name": "女性成长",
+              "value": "❤️ 自我关爱日记 ㅤ \nㅤ\n❤️ \n① 健康习惯：运动、饮食 \n② 精神护理：放松身心 单独\n③ 趣味爱好：释放压力 ㅤ \nㅤ\n📝 感悟分享 \n🌼 \"自己是自己生命中最重要的人\" \n🌟 \"爱自己才能更好地爱别人\" ㅤ \nㅤ\n🌸 记录每天的自我成长，因为你值得！",
+              "type": "string"
+            },
+            {
+              "id": "90d69235-3178-42cc-9416-4afd987ed579",
+              "name": "美食探店",
+              "value": "分享这家超级有氛围感的小酒馆，晚上和三五好友在这里相聚喝酒真的很不戳！\nㅤ\n​⤵︎◦​\n✔️ \n✔️ \n✔ \nㅤ\n\n地址在这里，去xx的时候一定记得打卡\n📍 xx\n",
+              "type": "string"
+            },
+            {
+              "id": "3f58cf28-2d6d-43ac-9b68-60a8d0ab2b24",
+              "name": "母婴",
+              "value": "𖠚ᐝ\nㅤ\n分享近期爱用的宝宝👶好物\nㅤ\n超级实用不闲置，一人带娃也省心\n🟡 辅食锅\nxxx\nㅤ\n🟡 备用奶嘴\nxxx\nㅤ\n🟡 奶嘴刷\nxxx\nㅤ\n🟡 抽屉安全锁\nxxx\nㅤ\n爸爸妈妈快去冲鸭❗",
+              "type": "string"
+            },
+            {
+              "id": "7b9337fc-d69b-4978-b0ef-8da8b8742ae4",
+              "name": "好物推荐",
+              "value": "分享我的好物清单！！\n把家打造成自己喜欢的样子✌\nㅤ\n//ᴳᴼᴼᴰ ᴰᴬᵞ\nㅤ\n🧊NO.1\n🍉NO.2\n🧊NO.3\n🍉NO.4\n🧊NO.5\n🍉NO.6\nㅤ\n//ᴳᴼᴼᴰ ᴰᴬᵞ\nㅤ\n#购物分享[话题]# #好物分享[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "34ef2a09-c162-4eaf-875a-d047d87260e7",
+              "name": "家居",
+              "value": "把这套奶油LOFT里的所有饰品分享给大家❕\nㅤ\n🧾清单如下\n➀ \n➁ \n➂ \n➃ \n➄ \n➅ \n➆ \n➇ \n➈ \n➀⓪ \n➀➀ \n➀➁ \nㅤ\n🪞：𝖣𝖺𝗂𝗅𝗒 𝗅𝗂𝖿𝖾 ･◡･\n这些小小又精致的小摆件一下就让空间活泼起来啦\nㅤ\n#装修[话题]# #好物分享[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "59a56a8d-7f3a-43d4-abc0-a77577ab20c8",
+              "name": "户外出行",
+              "value": "⛺露营季来了！\nㅤ\n📋保姆级清单：\n1⃣️ \n2⃣️ \n3⃣️ \n4⃣️ \n5⃣️ \n6⃣️ \n7⃣️ \n8⃣️ \n9⃣️ \nㅤ\n♡ >> ☪︎ 今日份美丽营业用到的氛围感好物♬\nㅤ\n⚪️ \n⚪️ \n⚪️ \nㅤ\n#小红书露营季[话题]# #一起去露营[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "23deecf4-168e-4b7d-b6e7-a6125cfcb70f",
+              "name": "美妆穿搭",
+              "value": "✨超简单新手妆容✨\nㅤ\n💫𝗧𝗜𝗣 𝟭：\nㅤ\n💫𝗧𝗜𝗣 𝟮：\nㅤ\n💫𝗧𝗜𝗣 𝟯：\nㅤ\n💫𝗧𝗜𝗣 𝟰：\nㅤ\n💫𝗧𝗜𝗣 𝟱：\nㅤ\n💫𝗧𝗜𝗣 𝟲：\nㅤ\n#今日妆容[话题]# #美妆[话题]# #妆容教学[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "67fcb934-c5dd-44a8-bec1-b2b53b9c53de",
+              "name": "创业副业",
+              "value": "🎈花了5天时间，整合13个带货账号案例\nㅤ\n🎈为大家总结一些实用原则\n1⃣️ \n2⃣️ \n3⃣️ \n4⃣️ \nㅤ\n🎈举几个例子\nA. \n>>改成：\nB.\n>>改成：\nㅤ\n实战TIPS：\n💡\n💡\n💡\n💡\nㅤ\n#自媒体运营[话题]# #带货[话题]# #创业[话题]# ",
+              "type": "string"
+            },
+            {
+              "id": "0b70635d-f76f-4875-ab91-b038dd03acec",
+              "name": "知识技能",
+              "value": "混职场一定要学好的office进阶技能，让领导看见你的闪光点，咻咻咻地升职加薪🚀🚀\nㅤ\n请收藏这份学习路径指南：\n1️⃣ \n2️⃣ \n3️⃣ \n4️⃣ \n5️⃣ \n6️⃣ \n7️⃣ \nㅤ\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "45a0348a-7f8c-4a03-93da-e1625534786c",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取所有用户数据项\nconst allUserData = $('Get many database pages').all();\n\n// 获取所有风格数据\nconst allStylesData = $input.all();\n\n// 存储所有匹配结果\nconst results = [];\n\n// 遍历每个用户数据项\nfor (const userItem of allUserData) {\n  // 获取当前项的文案风格\n  const selectedStyle = userItem.json.properties[\"文案风格\"].select.name;\n  \n  let styleContent = null;\n  \n  // 在风格数据中查找匹配的风格\n  for (const styleItem of allStylesData) {\n    // 检查styleItem.json中是否包含所选风格\n    if (styleItem.json && styleItem.json[selectedStyle]) {\n      styleContent = styleItem.json[selectedStyle];\n      break;\n    }\n    \n    // 如果直接在styleItem中查找（备用匹配方式）\n    if (styleItem[selectedStyle]) {\n      styleContent = styleItem[selectedStyle];\n      break;\n    }\n  }\n  \n  // 将匹配结果添加到结果数组\n  results.push({\n    json: {\n      originalData: userItem.json, // 保留原始数据\n      selectedStyle: selectedStyle,\n      styleContent: styleContent,\n      found: styleContent !== null\n    }\n  });\n}\n\n// 返回所有匹配结果\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -64
+      ],
+      "id": "fd1f1344-4d1b-4298-afdd-34fadc861009",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.originalData.properties[\"来源\"].title[0].text.content }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        -176
+      ],
+      "id": "c2705645-4645-4c5f-951b-c5ba7e366e2c",
+      "name": "HTTP Request",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取所有输入数据\nconst allInputData = $input.all();\n\n// 存储所有处理结果\nconst results = [];\n\n// 遍历每个输入项\nfor (const inputItem of allInputData) {\n  // 获取当前项的HTML内容\n  let htmlContent = inputItem.json.data || '';\n  const originalContent = htmlContent;\n\n  if (!htmlContent) {\n    results.push({\n      json: {\n        originalData: inputItem.json, // 保留原始数据\n        cleanText: '',\n        originalLength: 0,\n        cleanLength: 0,\n        wordCount: 0\n      }\n    });\n    continue;\n  }\n\n  // 去除script和style标签及其内容\n  htmlContent = htmlContent.replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '');\n  htmlContent = htmlContent.replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '');\n\n  // 为块级元素添加换行标记\n  const blockElements = [\n    'div', 'p', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',\n    'li', 'ul', 'ol', 'blockquote', 'pre', 'hr', 'table',\n    'tr', 'td', 'th', 'header', 'footer', 'section', 'article',\n    'nav', 'main', 'aside'\n  ];\n\n  blockElements.forEach(tag => {\n    const regex = new RegExp(`<\\\\/?${tag}[^>]*>`, 'gi');\n    htmlContent = htmlContent.replace(regex, '\\n');\n  });\n\n  // 去除所有剩余的HTML标签\n  htmlContent = htmlContent.replace(/<[^>]*>/g, '');\n\n  // 解码常见的HTML实体\n  const htmlEntities = {\n    \"&amp;\": \"&\",\n    \"&lt;\": \"<\",\n    \"&gt;\": \">\",\n    \"&quot;\": \"\\\"\",\n    \"&#39;\": \"'\",\n    \"&apos;\": \"'\",\n    \"&nbsp;\": \" \",\n    \"&copy;\": \"©\",\n    \"&reg;\": \"®\",\n    \"&trade;\": \"™\",\n    \"&hellip;\": \"…\",\n    \"&mdash;\": \"—\",\n    \"&ndash;\": \"–\",\n    \"&lsquo;\": \"'\",\n    \"&rsquo;\": \"'\",\n    \"&ldquo;\": \"\\\"\",\n    \"&rdquo;\": \"\\\"\"\n  };\n\n  Object.keys(htmlEntities).forEach(entity => {\n    const regex = new RegExp(entity, 'g');\n    htmlContent = htmlContent.replace(regex, htmlEntities[entity]);\n  });\n\n  // 解码数字HTML实体（如 &#123;）\n  htmlContent = htmlContent.replace(/&#(\\d+);/g, (match, dec) => {\n    return String.fromCharCode(dec);\n  });\n\n  // 解码十六进制HTML实体（如 &#x7B;）\n  htmlContent = htmlContent.replace(/&#x([0-9A-Fa-f]+);/g, (match, hex) => {\n    return String.fromCharCode(parseInt(hex, 16));\n  });\n\n  // 清理和格式化文本\n  htmlContent = htmlContent\n    .replace(/\\n\\s*\\n\\s*\\n/g, '\\n\\n')  // 三个或更多连续换行合并为两个\n    .replace(/[ \\t]+/g, ' ')            // 多个连续空格/制表符合并为一个空格\n    .replace(/^\\s+|\\s+$/g, '')          // 去除首尾空白\n    .replace(/\\n /g, '\\n')              // 去除行首空格\n    .replace(/ \\n/g, '\\n')              // 去除行尾空格\n    .replace(/\\n{3,}/g, '\\n\\n');        // 确保最多只有两个连续换行\n\n  // 将处理结果添加到结果数组\n  results.push({\n    json: {\n      // originalData: inputItem.json, // 保留原始数据\n      cleanText: htmlContent,\n      originalLength: originalContent.length,\n      cleanLength: htmlContent.length,\n      wordCount: htmlContent.trim() ? htmlContent.trim().split(/\\s+/).length : 0\n    }\n  });\n}\n\n// 返回所有处理结果\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        -176
+      ],
+      "id": "0487e978-2c25-45a2-b240-b947f1bca5cc",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.originalData.properties[\"来源\"].title[0].text.content }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "作为新闻媒体专家，你需要分析用户提供的内容或主题是否属于时事新闻。\n如果是，请调用联网工具为该主题补充更多有用信息，以便后续使用时有更完整、准确的内容参考，仅输出补全后的结果，无需说明。\n如果不是，直接输出原内容。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        992,
+        0
+      ],
+      "id": "4211d6f4-2db9-4388-abc0-d36f5656c6a4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        928,
+        192
+      ],
+      "id": "a611faca-674d-4b8d-9caf-b19a7cf6f203",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "peOp7pcjSxphhmmF",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        192
+      ],
+      "id": "8fa4dde7-9116-4754-ba4a-35827b6f3b3a",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "p7cURwN03YEu1QBd",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"content\": \"内容\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        192
+      ],
+      "id": "8d9173a1-44a1-4056-8450-7b030896e934",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        160
+      ],
+      "id": "46932e61-89aa-4165-a202-2ce9861f9811",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "peOp7pcjSxphhmmF",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=文案内容：{{ $json.cleanText }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=你是一位资深小红书内容创作专家，擅长将文章内容转化为吸引眼球且具有高互动率的小红书风格文案。请根据提供的内容，创作一篇符合以下要求的小红书文案：\n\n## 风格要求：\n1. 开头使用1-2个吸引眼球的emoji和简洁有力的标题，快速抓住读者注意力。\n2. 语言年轻化、亲切自然，符合小红书用户的表达习惯，带有轻松幽默感。\n3. 适当插入emoji表情，增强趣味性和视觉效果，但不过度堆砌。\n4. 分段清晰，每个段落突出重点，便于阅读和理解。\n5. 结尾部分明确引导用户进行点赞、收藏和评论，提升互动率。\n\n## 参考的结构/模板：\n{{ $('Code4').item.json.styleContent }}\n\n## 长度控制：\n- 总字数控制在200个字左右，内容精炼且信息完整，避免冗余。\n\n## 额外要求：\n1. 为文案生成一段配图描述，便于通过AI工具创作风格统一且契合主题的图片。\n2. 从文案中提炼1-2句关键句子或亮点，作为图片上的文案，可按小红书风格多添加换行符增强可读性，每段文案不超过5个汉字（如：一个新人\\n做电商\\n到底应该\\n如何起步？）\n3. 根据文案主题提取3-5个英文核心关键词，用于在素材网站或图库中精准搜索相关图片素材。\n\n请严格按照上述要求输出内容，确保文案既符合小红书风格，又具备高吸引力和互动性。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        1568,
+        -96
+      ],
+      "id": "4fd781d3-42fb-4f40-aade-ff17c9de76c7",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\"Xhs_Copywriter\": \"小红书文案内容\",\n\"Pic_Description\":\"配图描述\",\n\"Pic_Keywords\":\"图片关键词\",\n\"Pic_Sentences\":\"图片关键句子\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1648,
+        144
+      ],
+      "id": "12d263e8-9983-4efa-886e-075eb7cc74bd",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f724f2f-0c6c-45ab-9786-7dbeee37081a",
+              "name": "cleanText",
+              "value": "={{ $json.output.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1312,
+        0
+      ],
+      "id": "ba8b6c83-e35a-45e1-b5b4-ff6719472cf3",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "blockId": {
+          "__rl": true,
+          "value": "={{ $('Code4').item.json.originalData.url }}",
+          "mode": "url"
+        },
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "heading_3",
+              "textContent": "小红书文案"
+            },
+            {
+              "textContent": "={{ $json.output.Xhs_Copywriter }}"
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "笔记标签：",
+                    "annotationUi": {
+                      "bold": true
+                    }
+                  },
+                  {
+                    "text": "={{ $json.output.Pic_Sentences }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "封面Prompt：",
+                    "annotationUi": {
+                      "bold": true
+                    }
+                  },
+                  {
+                    "text": "={{ $json.output.Pic_Description }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            },
+            {
+              "richText": true,
+              "text": {
+                "text": [
+                  {
+                    "text": "封面关键词：",
+                    "annotationUi": {
+                      "bold": true
+                    }
+                  },
+                  {
+                    "text": "={{ $json.output.Pic_Keywords }}",
+                    "annotationUi": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -1040,
+        672
+      ],
+      "id": "3847158c-51b3-4c3e-8506-f573e120dcdc",
+      "name": "Append a block",
+      "retryOnFail": true,
+      "credentials": {
+        "notionApi": {
+          "id": "tHqNwAxXQ88MGWlm",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "action": "generate",
+        "dataPropertyName": "id"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        672
+      ],
+      "id": "0dfcfb43-c400-42a9-a6e6-b8b205a07c39",
+      "name": "Crypto"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Code4').item.json.originalData.properties[\"配图风格\"].select.name }}",
+                    "rightValue": "=记事本风格",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e9cfde61-b5e3-4690-9bae-ced47a42291f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dde474f7-41ea-486c-8ae2-25f5b720d04b",
+                    "leftValue": "={{ $('Code4').item.json.originalData.properties[\"配图风格\"].select.name }}",
+                    "rightValue": "普通风格",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4c152838-2dd7-4ee0-bd46-2f18b439be4b",
+                    "leftValue": "={{ $('Code4').item.json.originalData.properties[\"配图风格\"].select.name }}",
+                    "rightValue": "AI生成",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -640,
+        656
+      ],
+      "id": "09a47fae-0836-4ad3-92e5-41bfe34c997c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        528,
+        -64
+      ],
+      "id": "362c005e-a00e-455b-ad1d-bd7c6166641d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取文本数据\nconst inputData = $('AI Agent1').first().json.output.Pic_Sentences;\n\n// 获取最大值数据\nconst maxValue = 8;\n\n// 处理文本拆分（title固定2行，info为剩余内容）\nconst segments = inputData.split('\\n').filter(item => item.trim() !== '');\n\n// 固定规则：title取前2行，info取剩余行\nconst titleLines = 2;\nconst titleParts = segments.slice(0, titleLines);\nconst infoParts = segments.slice(titleLines);\n\n// 处理边界情况\nconst title = titleParts.join('\\n');\nconst info = infoParts.length > 0 ? infoParts.join('\\n') : '';\n\n// 生成随机数\nconst randomNumber = Math.floor(Math.random() * maxValue) + 1;\n\n// 返回合并后的结果\nreturn [\n  {\n    json: {\n      // 文本拆分结果\n      title: title,\n      info: info,\n      original: inputData,\n      segments_count: segments.length,\n      title_segments: titleParts.length,\n      \n      // 随机数结果\n      randomNumber: randomNumber,\n      maxValue: maxValue\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        432
+      ],
+      "id": "b82651c8-d5e2-4e04-8942-652091f28e2b",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "fileSelector": "=./n8ndata/picbg/{{ $json.randomNumber }}.jpg",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        32,
+        432
+      ],
+      "id": "e8516934-4927-4e4b-849c-2900d0693a28",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "operation": "multiStep",
+        "operations": {
+          "operations": [
+            {
+              "operation": "text",
+              "text": "={{ $('Code1').item.json.title }}",
+              "fontSize": 180,
+              "positionX": 200,
+              "positionY": 400,
+              "lineLength": 10,
+              "font": "/usr/share/fonts/truetype/host/A_HYPixel11pxU-2.ttf"
+            },
+            {
+              "operation": "text",
+              "text": "={{ $('Code1').item.json.info }}\n",
+              "fontSize": 150,
+              "positionX": 200,
+              "positionY": 900,
+              "lineLength": 10,
+              "font": "/usr/share/fonts/truetype/host/A_HYPixel11pxU-2.ttf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        256,
+        432
+      ],
+      "id": "bcbe54b1-7741-474c-b22d-1a5436027d67",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {
+        "url": "https://api.pexels.com/v1/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.randomKeyword }}"
+            },
+            {
+              "name": "per_page",
+              "value": "3"
+            },
+            {
+              "name": "orientation",
+              "value": "portrait"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "平台密钥"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        624
+      ],
+      "id": "215f4d51-616d-4a8f-ab64-0cc175880891",
+      "name": "HTTP Request1",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// 获取关键词字符串\nconst keywords = $('AI Agent1').first().json.output.Pic_Keywords;\n\n// 获取文本数据\nconst inputData = $('AI Agent1').first().json.output.Pic_Sentences;\n\n// 处理关键词\nconst keywordArray = keywords.split(',').map(keyword => keyword.trim());\nconst randomKeyword = keywordArray[Math.floor(Math.random() * keywordArray.length)];\n\n// 处理文本拆分（title固定2行，info为剩余内容）\nconst segments = inputData.split('\\n').filter(item => item.trim() !== '');\nconst titleLines = 2;\nconst titleParts = segments.slice(0, titleLines);\nconst infoParts = segments.slice(titleLines);\nconst title = titleParts.join('\\n');\nconst info = infoParts.length > 0 ? infoParts.join('\\n') : '';\n\n// 返回n8n格式的结果\nreturn [\n  {\n    json: {\n      // 关键词处理结果\n      randomKeyword: randomKeyword,\n      allKeywords: keywordArray,\n      totalCount: keywordArray.length,\n      \n      // 文本拆分结果\n      title: title,\n      info: info,\n      original: inputData,\n      segments_count: segments.length\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        656
+      ],
+      "id": "905b8989-ba19-4691-9e7b-682667eebbe4",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.photos[0].src.original }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        32,
+        624
+      ],
+      "id": "102526c8-ef3f-494c-8850-99b2abb3486b",
+      "name": "HTTP Request2",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "multiStep",
+        "operations": {
+          "operations": [
+            {
+              "operation": "resize",
+              "width": 1242,
+              "height": 1656
+            },
+            {
+              "operation": "blur",
+              "blur": 35,
+              "sigma": 10
+            },
+            {
+              "operation": "text",
+              "text": "={{ $('Code3').item.json.title }}",
+              "fontSize": 180,
+              "fontColor": "#FFE609",
+              "positionX": 200,
+              "positionY": 350,
+              "lineLength": 10,
+              "font": "/usr/share/fonts/truetype/host/AiDianZiTi-2.ttf"
+            },
+            {
+              "operation": "text",
+              "text": "={{ $('Code3').item.json.info }}",
+              "fontSize": 150,
+              "fontColor": "#FFE609",
+              "positionX": 200,
+              "positionY": 800,
+              "lineLength": 10,
+              "font": "/usr/share/fonts/truetype/host/AiDianZiTi-2.ttf"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        256,
+        624
+      ],
+      "id": "e54375ff-bae5-4b5c-83a9-e38e77b1e401",
+      "name": "Edit Image2"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "=./n8ndata/images/{{ $('Crypto').item.json.id }}.jpg",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        496,
+        592
+      ],
+      "id": "0e0a241f-013a-4777-9b70-1a9ceb19fd4a",
+      "name": "Read/Write Files from Disk3",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/models/google/imagen-4/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 密钥"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "wait"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"input\": {\n      \"prompt\": \"{{ $('AI Agent1').first().json.output.Pic_Description }}\",\n      \"aspect_ratio\": \"9:16\",\n      \"output_format\": \"jpg\",\n      \"safety_filter_level\": \"block_medium_and_above\"\n    }\n  }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        816
+      ],
+      "id": "2bca1ff0-1b9c-4c4a-a0fe-a91dfa2b1b32",
+      "name": "生成图片",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        816
+      ],
+      "id": "8f7ed767-67d3-44fe-b494-52b9c7def7b1",
+      "name": "HTTP Request3",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://host.docker.internal:18060/mcp",
+        "serverTransport": "httpStreamable",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        800
+      ],
+      "id": "fac08302-2266-43bc-9025-8142ffdbc248",
+      "name": "xhs_MCP",
+      "notes": "小红书操作节点"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=请为我发布小红书笔记\n小红书笔记内容及标签：{{ $('AI Agent1').item.json.output.Xhs_Copywriter }}\n配图地址：/app/images/{{ $('Crypto').item.json.id }}.jpg\n其他要求：根据内容生成一个简短的小红书标题(不超过15个字)",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "你是一名小红书运营助手，负责根据用户提供的内容自动调用tools中的xhs_MCP工具，高效完成用户的具体需求。最后根据结果、返回发布的状态(ture或者flase)和详情。",
+          "passthroughBinaryImages": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        576
+      ],
+      "id": "efd8f11f-e863-4942-92c4-0f251dffde86",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        704,
+        800
+      ],
+      "id": "982e4b94-3681-473e-8ebe-1fd88d405e95",
+      "name": "DeepSeek Chat Model2",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "peOp7pcjSxphhmmF",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"Release_status\": \"true/flase\",\n\t\"Release_details\": \"笔记内容\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        960,
+        800
+      ],
+      "id": "eaaa458d-9140-4272-a11f-2b87f7cea498",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://host.docker.internal:18060/mcp",
+        "serverTransport": "httpStreamable",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        -704,
+        256
+      ],
+      "id": "b966ccfa-64b6-4944-b1d6-98de1d86524d",
+      "name": "xhs_MCP1",
+      "notes": "小红书操作节点"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=检查小红书账户的登录状态，返回ture或者flase",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "你是一名小红书运营助手，负责根据用户提供的内容自动调用tools中的xhs_MCP工具，高效完成用户的具体需求。",
+          "passthroughBinaryImages": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -784,
+        32
+      ],
+      "id": "55d75a9e-192a-4473-93c3-34c76e3a9850",
+      "name": "AI Agent3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        256
+      ],
+      "id": "9816a1d0-2e87-40af-98fa-6932d62b7c13",
+      "name": "DeepSeek Chat Model3",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "peOp7pcjSxphhmmF",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"state\": \"true/false\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -576,
+        256
+      ],
+      "id": "6faeaea8-c024-4635-855a-74dce24659d5",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "332128fc-758b-4987-9813-d77481397c78",
+              "leftValue": "={{ $json.output.state }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -432,
+        32
+      ],
+      "id": "f991f393-5ab2-4418-844e-8c68933138ab",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "message:send",
+        "receive_id_type": "chat_id",
+        "receive_id": "oc_b14f58f66e6d9fc36219d20fc5e82897",
+        "content": "={\n  \"text\": \"小红书账户不在线，请及时检查！\"\n}"
+      },
+      "type": "n8n-nodes-feishu-lite.feishuNode",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        128
+      ],
+      "id": "783f4a9b-1990-49c3-92e9-162e68651c38",
+      "name": "飞书发送消息通知1",
+      "credentials": {
+        "feishuCredentialsApi": {
+          "id": "oNpZcIeSojLWouqx",
+          "name": "n8n通知机器人"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7148e05c-248d-4971-8871-acc2802b5f64",
+              "leftValue": "={{ $json.output.Release_status }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        576
+      ],
+      "id": "e9b49cbf-6217-49dc-bf2a-4c5c2484a160",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "message:send",
+        "receive_id_type": "chat_id",
+        "receive_id": "oc_b14f58f66e6d9fc36219d20fc5e82897",
+        "content": "={\n  \"text\": \"小红书笔记发送失败，请及时检查！\"\n}"
+      },
+      "type": "n8n-nodes-feishu-lite.feishuNode",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        704
+      ],
+      "id": "758621aa-8680-46bb-93f8-fd1840f01ee0",
+      "name": "飞书发送消息通知",
+      "credentials": {
+        "feishuCredentialsApi": {
+          "id": "oNpZcIeSojLWouqx",
+          "name": "n8n通知机器人"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "operation": "update",
+        "pageId": {
+          "__rl": true,
+          "value": "={{ $('Code4').item.json.originalData.url }}",
+          "mode": "url"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "状态|select",
+              "selectValue": "已发布"
+            },
+            {
+              "key": "发布时间|date",
+              "date": "={{ $now }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        1392,
+        512
+      ],
+      "id": "873b9bc2-6ef2-4d59-b0b5-76d0306b2983",
+      "name": "Update a database page",
+      "retryOnFail": true,
+      "credentials": {
+        "notionApi": {
+          "id": "tHqNwAxXQ88MGWlm",
+          "name": "Notion account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (180 - 60 + 1)) + 60 }}",
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1648,
+        592
+      ],
+      "id": "ffe07c70-23d8-4fc3-8722-1db9bc5839a5",
+      "name": "Wait",
+      "webhookId": "32cadc8e-cd7c-4ed0-9e5e-b5e4030383a6",
+      "notes": "{{ Math.floor(Math.random() * (180 - 60 + 1)) + 60 }}"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many database pages": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Append a block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append a block": {
+      "main": [
+        [
+          {
+            "node": "Crypto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crypto": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Edit Image2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image2": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "生成图片": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "生成图片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "xhs_MCP": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "xhs_MCP1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get many database pages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "飞书发送消息通知1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Update a database page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "飞书发送消息通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a database page": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "飞书发送消息通知": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "38db72eb-6bd1-4771-af20-ffb99e1dc38a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "667f8e49cea6f05a4f2d4764a2ef083b44c681d7bcf3709cc71f85be90eeca2e"
+  },
+  "id": "6L6i9n29L0lm6VH9",
+  "tags": []
+}
